@@ -1,7 +1,15 @@
-embeddings_model:
+my_query: "Under 1500-talet och 1600-talet, var bodde typiskt en svensk kung eller drottning? Fanns det något speciellt slott eller borg?"
+embedding_model:
   model_name_or_path: "KBLab/sentence-bert-swedish-cased"
   cache_folder: "./embeddings_cache/"
 vector_db:
   path: "./vector_db_swedish_monarchs.db"
-wikipedia_data:
+  collection_name: "swedish_monarchs_wikipedia"
+text_source:
+  db_file: "./data/swedish_monarchs.json"
+  wikipedia:
+    swedish_monarchs:
+      - Sten_Sture_den_äldre
+      - Gustav_Vasa
+
 

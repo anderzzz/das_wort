@@ -2,13 +2,14 @@
 
 """
 import yaml
+import json
 
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
 
 #
 # Parse the configuration file
-with open('config.yaml', 'r') as f:
+with open('./conf.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
 
@@ -20,11 +21,31 @@ embedding_model = SentenceTransformer(
 
 #
 # Load the vector database
-quadrant_client = QdrantClient(
+qdrant_handle = QdrantClient(
     path=config['vector_db']['path'],
+)
+qdrant_handle.recreate_collection(
+    collection_name=config['vector_db']['collection_name'],
+    vectors_config=models.VectorParams(
+        size=embedding_model.get_sentence_embedding_dimension(),
+        distance=models.Distance.COSINE,
+    ),
 )
 
 #
-# Connect to the textdata collection
-pass
+# Build the vector database for the texts
+with open(config['text_source']['db_file'], 'r') as f:
+    text_data = json.load(f)
 
+for text in text_data:
+    vector = embedding_model.encode([text['content']])[0]
+    qdrant_handle.upsert(
+        collection_name=config['vector_db']['collection_name'],
+        points=[
+            models.PointStruct(
+                id=text['document_id'],
+                vector=vector.tolist(),
+                payload={"title": text['title'], "url": text['url']}
+            )
+        ]
+    )
