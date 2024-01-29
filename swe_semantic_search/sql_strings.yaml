@@ -1,0 +1,19 @@
+sql_create: |
+  CREATE TABLE document (
+    surrogate_key INTEGER PRIMARY KEY AUTOINCREMENT,
+    text_id INTEGER,
+    segment_id INTEGER,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    content TEXT NOT NULL,
+    UNIQUE (text_id, segment_id)
+  );
+sql_insert: |
+  INSERT INTO document (text_id, segment_id, title, url, content)
+  VALUES (?, ?, ?, ?, ?);
+sql_select_all: |
+  SELECT surrogate_key, text_id, segment_id, title, url, content FROM document;
+sql_select_by_id: |
+  SELECT surrogate_key, text_id, segment_id, title, url, content FROM document WHERE surrogate_key = ?;
+sql_select_by_text_segment_id: |
+  SELECT surrogate_key, text_id, segment_id, title, url, content FROM document WHERE text_id = ? AND segment_id = ?;

@@ -10,11 +10,6 @@ segmentor:
   n_overlapping_sentences: 1
 text_source:
   text_data_file: "./data/swedish_monarchs.db"
-  field_names:
-    - document_id
-    - title
-    - url
-    - content
   wikipedia:
     swedish_monarchs:
       - Sten_Sture_den_äldre

@@ -3,11 +3,13 @@
 """
 from stanza import Pipeline
 
+splitter = Pipeline(lang='sv', processors='tokenize')
+
+
 def make_segments_of_(text: str, max_words_in_segment: int, n_overlapping_sentences: int):
     """Split text into segments of max_words_in_segment words.
 
     """
-    splitter = Pipeline(lang='sv', processors='tokenize')
     doc = splitter(text)
 
     n_tokens_per_sentence = [len(sentence.tokens) for sentence in doc.sentences]
