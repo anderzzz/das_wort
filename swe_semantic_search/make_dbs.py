@@ -2,21 +2,18 @@
 
 """
 import yaml
-import json
 import csv
 
-from stanza import Pipeline
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
+
+from segment_text import make_segments_of_
+
 
 #
 # Parse the configuration file
 with open('./conf.yaml', 'r') as f:
     config = yaml.safe_load(f)
-
-#
-# Set up the sentence splitter
-splitter = Pipeline(lang='sv', processors='tokenize')
 
 #
 # Load the embedding engine
@@ -40,33 +37,30 @@ qdrant_handle.recreate_collection(
 
 #
 # Build the vector database for the texts
-with open(config['text_source']['db_file'], 'r', encoding='utf-8') as csvfile:
+with open(config['text_source']['text_data_file'], 'r', encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
 
+    id_db = 0
     for row in reader:
-        for i, sentence in enumerate(splitter(row['content']).sentences):
-            vector = embedding_model.encode([sentence.text])[0]
+        text_segments = make_segments_of_(
+            text=row['content'],
+            max_words_in_segment=config['segmentor']['max_segment_size'],
+            n_overlapping_sentences=config['segmentor']['n_overlapping_sentences'],
+        )
+
+        for i_segment, text in enumerate(text_segments):
+            vector = embedding_model.encode([text])[0]
             qdrant_handle.upsert(
                 collection_name=config['vector_db']['collection_name'],
                 points=[
                     models.PointStruct(
-                        id=f'{row["document_id"]}_{i}',
+                        id=id_db,
                         vector=vector.tolist(),
-                        payload={"title": row['title'], "url": row['url']}
+                        payload={"title": row['title'],
+                                 "url": row['url'],
+                                 "text_id": row['document_id'],
+                                 "segment_id": i_segment}
                     )
                 ]
             )
-
-
-for text in text_data:
-    vector = embedding_model.encode([text['content']])[0]
-    qdrant_handle.upsert(
-        collection_name=config['vector_db']['collection_name'],
-        points=[
-            models.PointStruct(
-                id=text['document_id'],
-                vector=vector.tolist(),
-                payload={"title": text['title'], "url": text['url']}
-            )
-        ]
-    )
+            id_db += 1

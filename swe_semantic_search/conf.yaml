@@ -6,10 +6,10 @@ vector_db:
   path: "./vector_db_swedish_monarchs.db"
   collection_name: "swedish_monarchs_wikipedia"
 segmentor:
-  max_words_in_segment: 100
+  max_segment_size: 100
   n_overlapping_sentences: 1
 text_source:
-  text_data_file: "./data/swedish_monarchs.csv"
+  text_data_file: "./data/swedish_monarchs.db"
   field_names:
     - document_id
     - title

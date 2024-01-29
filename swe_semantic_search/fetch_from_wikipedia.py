@@ -1,6 +1,7 @@
 """Fetch data from Swedish language Wikipedia.
 
 """
+from typing import Dict
 import yaml
 import csv
 import wikipedia
@@ -14,6 +15,23 @@ with open('./conf.yaml', 'r') as f:
 # Prepare the Wikipedia API
 wikipedia.set_lang("sv")
 
+def fetch_from_wikipedia(page_title: str) -> Dict:
+    """Fetch data from Wikipedia.
+
+    Args:
+        page_title (str): The title of the Wikipedia page.
+
+    Returns:
+        Dict: The data from the Wikipedia page.
+
+    """
+    page = wikipedia.page(page_title)
+    data_chunk = {
+        'title': page.title,
+        'url': page.url,
+        'content': page.content,
+    }
+    return data_chunk
 #
 # Iterate over pages and fetch data
 with open(config['text_source']['text_data_file'], 'w', newline='', encoding='utf-8') as f:
@@ -28,7 +46,7 @@ with open(config['text_source']['text_data_file'], 'w', newline='', encoding='ut
             'url': page.url,
             'content': page.content,
         }
-        if not data_chunk.keys() == config['text_source']['field_names']:
+        if not set(data_chunk.keys()) == set(config['text_source']['field_names']):
             raise ValueError('The keys of the data chunk do not match the field names in the configuration file.')
 
         writer.writerow(data_chunk)

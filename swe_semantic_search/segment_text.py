@@ -1,11 +1,9 @@
 """Segment text into sentences and larger chunks
 
 """
-from itertools import accumulate
-
 from stanza import Pipeline
 
-def make_segments_mask_of_(text: str, max_words_in_segment: int, n_overlapping_sentences: int):
+def make_segments_of_(text: str, max_words_in_segment: int, n_overlapping_sentences: int):
     """Split text into segments of max_words_in_segment words.
 
     """
@@ -16,8 +14,8 @@ def make_segments_mask_of_(text: str, max_words_in_segment: int, n_overlapping_s
 
     k_segment = 0
     mask = {}
-    ind_base = 0
     ind_abs = 0
+
     ind = 0
     n_tokens_in_segment = 0
     mask_ = []
@@ -39,8 +37,5 @@ def make_segments_mask_of_(text: str, max_words_in_segment: int, n_overlapping_s
         ind += 1
 
     mask[k_segment] = mask_
-    print (mask)
 
-
-if __name__ == '__main__':
-    make_segments_mask_of_('Hejsan på dig. Hur mås det? Jag är helt okej. Tack tack, får man säga. Men hemskt vad galet vädret är. Kors i taket säger jag!', 14, 1)
+    return [' '.join([doc.sentences[ind].text for ind in mask[k]]) for k in mask]
