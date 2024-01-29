@@ -2,14 +2,25 @@
 
 """
 import yaml
+import sqlite3
 
 from sentence_transformers import SentenceTransformer
-from qdrant_client import QdrantClient, models
+from qdrant_client import QdrantClient
+
+from row_factory import dict_factory
 
 #
 # Parse the configuration file
-with open('config.yaml', 'r') as f:
+with open('conf.yaml', 'r') as f:
     config = yaml.safe_load(f)
+with open('sql_strings.yaml', 'r') as f:
+    sql_strings = yaml.safe_load(f)
+
+#
+# Connect to the SQLite database
+conn = sqlite3.connect(config['text_source']['text_data_file'])
+conn.row_factory = dict_factory
+cur = conn.cursor()
 
 #
 # Load the embedding engine
@@ -25,10 +36,20 @@ qdrant_handle = QdrantClient(
 )
 
 #
-# Embed query
-query_vector = embedding_model.encode([config['my_query']])[0]
+# Embed query and do the semantic similarity search
+query_vector = embedding_model.encode([config['search']['my_query']])[0]
 hits = qdrant_handle.search(
     collection_name=config['vector_db']['collection_name'],
     query_vector=query_vector,
-    limit=5
+    limit=config['search']['n_results']
 )
+
+#
+# Retrieve the text segments
+semantically_similar_segments = []
+for hit in hits:
+    cur.execute(sql_strings['sql_select_by_id'], (hit.id,))
+    data = cur.fetchone()
+    semantically_similar_segments.append({field: data[field] for field in config['search']['output_keys']})
+
+print (semantically_similar_segments)

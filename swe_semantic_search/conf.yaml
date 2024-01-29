@@ -1,4 +1,9 @@
-my_query: "Under 1500-talet och 1600-talet, var bodde typiskt en svensk kung eller drottning? Fanns det något speciellt slott eller borg?"
+search:
+  my_query: "Vad gjorde Gustav Vasa i Dalarna när åkte med skidor där uppe?"
+  n_results: 5
+  output_keys:
+    - title
+    - content
 embedding_model:
   model_name_or_path: "KBLab/sentence-bert-swedish-cased"
   cache_folder: "./embeddings_cache/"

@@ -7,18 +7,10 @@ import sqlite3
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
 
-def dict_factory(cursor, row):
-    """Convert the database row to a dictionary
-
-    """
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
+from row_factory import dict_factory
 
 #
-# Parse the configuration file
+# Parse the configuration file and sql strings file
 with open('./conf.yaml', 'r') as f:
     config = yaml.safe_load(f)
 with open('./sql_strings.yaml', 'r') as f:
