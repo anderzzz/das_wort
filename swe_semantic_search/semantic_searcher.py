@@ -52,4 +52,5 @@ for hit in hits:
     data = cur.fetchone()
     semantically_similar_segments.append({field: data[field] for field in config['search']['output_keys']})
 
-print (semantically_similar_segments)
+for segment in semantically_similar_segments:
+    print('* {}'.format(segment['content']))
