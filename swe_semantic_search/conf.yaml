@@ -5,8 +5,16 @@ embedding_model:
 vector_db:
   path: "./vector_db_swedish_monarchs.db"
   collection_name: "swedish_monarchs_wikipedia"
+segmentor:
+  max_words_in_segment: 100
+  n_overlapping_sentences: 1
 text_source:
-  db_file: "./data/swedish_monarchs.json"
+  text_data_file: "./data/swedish_monarchs.csv"
+  field_names:
+    - document_id
+    - title
+    - url
+    - content
   wikipedia:
     swedish_monarchs:
       - Sten_Sture_den_äldre
