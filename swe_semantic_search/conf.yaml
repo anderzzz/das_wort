@@ -1,14 +1,14 @@
 search:
-  my_query: "Hur förhöll sig svenska kungar till Napoleon och Frankrike under 1800-talet?"
+  my_query: "Hur förhöll sig Sverige till Napoleon och Frankrike under 1800-talet?"
   n_results: 7
   output_keys:
     - title
     - content
 embedding_model:
-  model_name_or_path: "KBLab/sentence-bert-swedish-cased"
+  model_name_or_path: "intfloat/multilingual-e5-large"
   cache_folder: "./embeddings_cache/"
 vector_db:
-  path: "./vector_db_swedish_monarchs.db"
+  path: "./vector_db_swedish_monarchs_e5.db"
   collection_name: "swedish_monarchs_wikipedia"
 segmentor:
   max_segment_size: 100
