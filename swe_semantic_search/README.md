@@ -1,4 +1,4 @@
-The following code implements a basic algorithm for semantic search in text data in Swedish. The code is part of a blog post:
+The following code implements a basic algorithm for semantic search in text data in Swedish. The code is part of a blog post: https://medium.com/@AJOhrn/semantisk-s%C3%B6kning-i-egen-data-f%C3%B6r-egen-maskin-2eaf837a2302
 
 The code includes the parts:
 * Create illustrative textdata in Swedish by scraping Wikipedia articles, see `make_raw_text.py`
