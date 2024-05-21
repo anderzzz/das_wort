@@ -1,0 +1,27 @@
+{
+  "base_url": "https://data.vinnova.se/api/",
+  "apis": {
+    "program-list": {
+      "name": "program-list",
+      "endpoint": "program",
+      "description": "Collect a list of all programs from Vinnova that have been changed or altered since a certain date. The programs are identified by a unique ID, called 'Diarienummer' or 'DiarienummerUtlysning",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The date to start collecting data from. The format of the date is YYYY-MM-DD, such as 2016-01-01, 2017-02-13."
+        }
+      }
+    },
+    "program-details": {
+      "name": "program-details",
+      "endpoint": "program",
+      "description": "Collect detailed information about a specific program from Vinnova given a unique ID",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The unique ID of the program to collect detailed information about. The format of the ID is YYYY-NNNNN, such as 2016-01234, 2017-12345."
+        }
+      }
+    }
+  }
+}

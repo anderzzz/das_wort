@@ -1,5 +1,5 @@
 search:
-  my_query: "Hur förhöll sig Sverige till Napoleon och Frankrike under 1800-talet?"
+  my_query: "Hur förhöll sig Sveriges kungar och drottningar till Napoleon och Frankrike under 1800-talet?"
   n_results: 7
   output_keys:
     - title
