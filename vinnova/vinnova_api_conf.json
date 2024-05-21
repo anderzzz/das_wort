@@ -10,7 +10,8 @@
           "type": "string",
           "description": "The date to start collecting data from. The format of the date is YYYY-MM-DD, such as 2016-01-01, 2017-02-13."
         }
-      }
+      },
+      "decorator": "only_diarienr"
     },
     "program-details": {
       "name": "program-details",

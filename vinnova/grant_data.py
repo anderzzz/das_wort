@@ -12,68 +12,10 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
 from mistralai.client import MistralClient
 
+from vinnova_drl import build_vinnova_drl_func, VinnovaDataRetrievalLayer
+
 
 VINNOVA_API_CONF_FILE = "vinnova_api_conf.json"
-
-
-class VinnovaClientError(Exception):
-    pass
-
-
-class VinnovaDataRetrievalLayer:
-    """Bla bla
-
-    """
-    base_url = "https://data.vinnova.se/api"
-
-    def __init__(self,
-                 name: str,
-                 endpoint: str,
-                 description: Optional[str] = None,
-                 parameters_description: Optional[Dict[str, Dict[str, str]]] = None,
-                 ):
-        self.name = name
-        self.endpoint = endpoint
-        self.description = description
-        self.parameters_description = parameters_description
-
-        self._client = None
-
-    @property
-    def specification_str(self):
-        return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": self.parameters_description,
-                    "required": ["data"],
-                }
-            }
-        }
-
-    @property
-    def client(self):
-        if self._client is None:
-            raise VinnovaClientError("HTTP client not set.")
-        return self._client
-
-    @client.setter
-    def client(self, client: Client):
-        self._client = client
-
-    def __call__(self, data: str) -> Dict:
-        """Bla bla
-
-        """
-        url = f"{self.base_url}/{self.endpoint}/{data}"
-        response = self.client.get(url)
-        if response.status_code != 200:
-            raise VinnovaClientError(f"HTTP GET request failed with status code {response.status_code}")
-
-        return response.json()
 
 
 class MessageStack:
@@ -83,7 +25,10 @@ class MessageStack:
     def __repr__(self):
         ret_str = ''
         for row in self._message_collection:
-            ret_str += f'{row["role"]}: {row["content"]}\n'
+            if isinstance(row, Dict):
+                ret_str += f'{row["role"]}: {row["content"]}\n'
+            elif isinstance(row, ChatCompletionMessage):
+                ret_str += f'assistant: {row.content}\n'
             ret_str += '=' * 50
             ret_str += '\n'
         return ret_str[:-51]
@@ -107,8 +52,8 @@ class MessageStack:
     def add_assistant_message(self, content: ChatCompletionMessage):
         self._add_payload(content)
 
-    def add_tool_message(self, content: str, tool_call_id: str, name: str):
-        payload = {'role': 'tool', 'content': content, 'tool_call_id': tool_call_id, 'name': name}
+    def add_tool_message(self, content: str, tool_call_id: str, name: str, type: str):
+        payload = {'role': 'tool', 'content': content, 'tool_call_id': tool_call_id, 'name': name, 'type': type}
         self._add_payload(payload)
 
     def get_message_stack(self):
@@ -118,28 +63,8 @@ class MessageStack:
         del self._message_collection[slc]
 
 
-def make_vinnova_drl_func(api_conf_fp: str):
-    with open(api_conf_fp, 'r') as f:
-        api_conf = json.load(f)
-
-    vinnova_drl_func = {}
-    for name, conf in api_conf['apis'].items():
-        vinnova_drl_func[name] = VinnovaDataRetrievalLayer(
-            name=name,
-            endpoint=conf['endpoint'],
-            description=conf['description'],
-            parameters_description=conf['parameters']
-        )
-
-    return vinnova_drl_func
-
-
 def get_openai_client() -> OpenAI:
     return OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-
-
-def get_httpx_client() -> Client:
-    return Client()
 
 
 def send_request_to_openai_chat_completion(
@@ -188,11 +113,13 @@ class SemanticEngine:
                  system_definition: str,
                  llm_params: Dict,
                  tools: Optional[List[VinnovaDataRetrievalLayer]] = None,
+                 respond_to_function: bool = True
                  ):
         self.client = client
         self.message_stack = MessageStack()
         self.message_stack.set_system_instruction(system_definition)
         self.llm_params = llm_params
+        self.respond_to_function = respond_to_function
 
         self.tools_str = None
         if tools is not None:
@@ -222,27 +149,25 @@ class SemanticEngine:
                 tool_response = tool(**function_args)
 
                 self.message_stack.add_tool_message(
-                    content=tool_response,
+                    content=json.dumps(tool_response),
                     tool_call_id=tool_call_id,
                     name=function_name,
+                    type='function'
                 )
 
-            response = send_request_to_openai_chat_completion(
-                client=self.client,
-                messages=self.message_stack.get_message_stack(),
-                tools=self.tools_str,
-                **self.llm_params
-            )
+            if self.respond_to_function:
+                response = send_request_to_openai_chat_completion(
+                    client=self.client,
+                    messages=self.message_stack.get_message_stack(),
+                    tools=self.tools_str,
+                    **self.llm_params
+                )
+                self.message_stack.add_assistant_message(response.choices[0].message)
 
-        return response.choices[0].message.content
 
 
 def main():
-    vinnova_drl_func = make_vinnova_drl_func(VINNOVA_API_CONF_FILE)
-    http_client = get_httpx_client()
-    for drl in vinnova_drl_func.values():
-        drl.client = http_client
-
+    vinnova_drl_func = build_vinnova_drl_func(VINNOVA_API_CONF_FILE)
     llm_client = get_openai_client()
     engine = SemanticEngine(
         client=llm_client,
@@ -255,16 +180,14 @@ def main():
             'presence_penalty': 0.0,
             'n_completions': 1
         },
-        tools=[vinnova_drl_func[api_key] for api_key in ['program-list']]
+        tools=[vinnova_drl_func[api_key] for api_key in ['program-list']],
+        respond_to_function=False
     )
 
-    x = engine.process('I am researching Vinnova grants. I am curious about programs from 2023 and onwards.')
-    print (x)
-
-    vinnova_drl = VinnovaDataRetrievalLayer(name="program", endpoint="program")
-    vinnova_drl.client = Client()
-    x = vinnova_drl("2022-01-01")
-    print(x)
+    engine.process('Hello there good fellow')
+    print(engine.message_stack)
+    engine.process('I am researching Vinnova grants. I am curious about programs from 2023 and onwards.')
+    print(engine.message_stack)
 
 
 if __name__ == '__main__':
