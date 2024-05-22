@@ -26,7 +26,7 @@
     },
     "utlysning-list": {
       "name": "utlysning-list",
-      "endpoint": "utlysning",
+      "endpoint": "utlysningar",
       "description": "Collect a list of all calls for applications or 'utlysningar' (in Swedish) from Vinnova that have been changed or altered since a certain date. The utlysningar are identified by a unique ID, called 'Diarienummer'.",
       "parameters": {
         "data": {
@@ -38,7 +38,7 @@
     },
     "utlysning-details": {
       "name": "utlysning-details",
-      "endpoint": "utlysning",
+      "endpoint": "utlysningar",
       "description": "Collect detailed information about a specific call for applications or 'utlysning' (in Swedish) from Vinnova given a unique ID",
       "parameters": {
         "data": {
@@ -49,7 +49,7 @@
     },
     "ansokningsomgang-list": {
       "name": "ansokningsomgang-list",
-      "endpoint": "ansokningsomgang",
+      "endpoint": "ansokningsomgangar",
       "description": "Collect a list of all application rounds or 'ansökningsomgångar' (in Swedish) from Vinnova that have been changed or altered since a certain date. The application rounds are identified by a unique ID, called 'Diarienummer'.",
       "parameters": {
         "data": {
@@ -61,7 +61,7 @@
     },
     "ansokningsomgang-details": {
       "name": "ansokningsomgang-details",
-      "endpoint": "ansokningsomgang",
+      "endpoint": "ansokningsomgangar",
       "description": "Collect detailed information about a specific application round or 'ansökningsomgång' (in Swedish) from Vinnova given a unique ID",
       "parameters": {
         "data": {

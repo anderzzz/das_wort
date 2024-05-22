@@ -2,54 +2,13 @@
 
 """
 import json
-from typing import Dict, Optional, Callable, List
+from typing import Dict, Optional, Callable
 
-from httpx import Client
+from vinnova_api import decorators_to_vinnova_api, VinnovaAPI
 
 
-class VinnovaHTTPClientError(Exception):
+class VinnovaDataRetrievalLayerMissingAPIError(Exception):
     pass
-
-
-def get_httpx_client() -> Client:
-    return Client(timeout=60.0)
-
-
-class VinnovaAPI:
-    """Bla bla
-
-    """
-    base_url = "https://data.vinnova.se/api"
-
-    def __init__(self,
-                 endpoint: str,
-                 headers: Optional[Dict[str, str]] = None,
-                 ):
-        self.endpoint = endpoint
-        self.headers = headers
-        self._client = None
-
-    @property
-    def client(self):
-        if self._client is None:
-            raise VinnovaHTTPClientError("HTTP client not set.")
-        return self._client
-
-    @client.setter
-    def client(self, client: Client):
-        self._client = client
-
-    def __call__(self, data: str) -> Dict:
-        """Bla bla
-
-        """
-        url = f"{self.base_url}/{self.endpoint}/{data}"
-        print (url)
-        response = self.client.get(url, headers=self.headers)
-        if response.status_code != 200:
-            raise VinnovaHTTPClientError(f"HTTP GET request failed with status code {response.status_code}")
-
-        return response.json()
 
 
 class VinnovaDataRetrievalLayer:
@@ -61,15 +20,15 @@ class VinnovaDataRetrievalLayer:
                  vinnova_api: VinnovaAPI,
                  description: Optional[str] = None,
                  parameters_description: Optional[Dict[str, Dict[str, str]]] = None,
-                 decorator: Optional[Callable] = None,
+                 api_decorator: Optional[Callable] = None,
                  ):
         self.name = name
         self.vinnova_api = vinnova_api
         self.description = description
         self.parameters_description = parameters_description
 
-        if decorator is not None:
-            self._func = decorator(self.vinnova_api)
+        if api_decorator is not None:
+            self._func = api_decorator(self.vinnova_api)
         else:
             self._func = self.vinnova_api
 
@@ -95,65 +54,76 @@ class VinnovaDataRetrievalLayer:
         return self._func(data)
 
 
-def _vinnova_api_decorator_only_diarienr(func):
-    def wrapper(data: str) -> List:
-        raw_data = func(data)
-        diarienr = []
-        for entry in raw_data:
-            try:
-                diarienr.append(entry['Diarienummer'])
-            except KeyError:
-                print (entry)
-                raise KeyError("Diarienummer not found in entry")
-        return diarienr
-    return wrapper
-
-
-decorators_to_vinnova_api = {
-    'only_diarienr': _vinnova_api_decorator_only_diarienr,
-}
-
-
-def build_vinnova_drl_func(api_conf_fp: str):
+def build_vinnova_drl_func(
+        api_name: str,
+        api_conf_fp: str
+):
     """Bla bla
 
     """
-    client = get_httpx_client()
     with open(api_conf_fp, 'r') as f:
         api_conf = json.load(f)
 
-    vinnova_drl_func = {}
-    for name, conf in api_conf['apis'].items():
-        vinnova_api = VinnovaAPI(conf['endpoint'])
-        vinnova_api.client = client
+    try:
+        conf = api_conf['apis'][api_name]
+    except KeyError:
+        raise VinnovaDataRetrievalLayerMissingAPIError(f"API {api_name} not found in DRL configuration file")
 
-        if 'decorator' in conf:
-            _decorator = decorators_to_vinnova_api[conf['decorator']]
-        else:
-            _decorator = None
+    vinnova_api = VinnovaAPI(conf['endpoint'])
 
-        vinnova_drl_func[name] = VinnovaDataRetrievalLayer(
-            name=name,
-            description=conf['description'],
-            parameters_description=conf['parameters'],
-            vinnova_api=vinnova_api,
-            decorator=_decorator,
-        )
+    if 'decorator' in conf:
+        _decorator = decorators_to_vinnova_api[conf['decorator']]
+    else:
+        _decorator = None
 
-    return vinnova_drl_func
+    return VinnovaDataRetrievalLayer(
+        name=api_name,
+        description=conf['description'],
+        parameters_description=conf['parameters'],
+        vinnova_api=vinnova_api,
+        api_decorator=_decorator,
+    )
 
 
-def test_vinnova_drl_project_api():
-    api = VinnovaAPI('program')
-    api.client = get_httpx_client()
-    data = api('2023-01-01')
-    print (data)
-    api = VinnovaAPI('projekt')
-    api.client = get_httpx_client()
-    data = api('2023-01-01')
-    print (data)
+def test_vinnova_drl_program():
+    drl_program_list = build_vinnova_drl_func('program-list', 'vinnova_drl_conf.json')
+    x = drl_program_list('2024-01-01')
+    print (x)
+
+
+def test_vinnova_drl_projekt():
+    drl_project_list = build_vinnova_drl_func('projekt-list', 'vinnova_drl_conf.json')
+    x = drl_project_list('2024-01-01')
+    print (x)
+
+
+def test_vinnova_drl_projekt_details():
+    drl_project_details = build_vinnova_drl_func('projekt-details', 'vinnova_drl_conf.json')
+    x = drl_project_details('2022-03113')
+    print (x)
+
+
+def test_vinnova_drl_utlysningar():
+    drl_utlysningar = build_vinnova_drl_func('utlysning-list', 'vinnova_drl_conf.json')
+    x = drl_utlysningar('2024-01-01')
+    print (x)
+
+def test_vinnova_drl_utlysningar_details():
+    drl_utlysningar_details = build_vinnova_drl_func('utlysning-details', 'vinnova_drl_conf.json')
+    x = drl_utlysningar_details('2016-02193')
+    print (x)
+
+
+def test_vinnova_drl_ansokningsomgang_details():
+    drl_ansokningsomgang_details = build_vinnova_drl_func('ansokningsomgang-details', 'vinnova_drl_conf.json')
+    x = drl_ansokningsomgang_details('2016-02198')
+    print (x)
+    x = drl_ansokningsomgang_details('2019-05009')
+    print (x)
+
 
 
 if __name__ == '__main__':
-    test_vinnova_drl_project_api()
-    print('Done')
+    #test_vinnova_drl_utlysningar()
+    #test_vinnova_drl_utlysningar_details()
+    test_vinnova_drl_ansokningsomgang_details()

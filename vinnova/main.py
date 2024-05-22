@@ -5,7 +5,7 @@ from vinnova_drl import build_vinnova_drl_func, VinnovaDataRetrievalLayer
 from llm import SemanticEngine, get_openai_client
 
 
-VINNOVA_API_CONF_FILE = "vinnova_api_conf.json"
+VINNOVA_API_CONF_FILE = "vinnova_drl_conf.json"
 
 
 def main():
