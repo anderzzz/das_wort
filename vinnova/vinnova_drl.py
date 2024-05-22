@@ -12,7 +12,16 @@ class VinnovaDataRetrievalLayerMissingAPIError(Exception):
 
 
 class VinnovaDataRetrievalLayer:
-    """Bla bla
+    """The Vinnova data retrieval layer (DRL) class. It provides an interface to the Vinnova APIs
+    along with pre- and post-processing of the data. In addition, instances of this class can be
+    tools in an LLM engine (e.g. OpenAI, Mistral).
+
+    Args:
+        name (str): The name of the DRL
+        vinnova_api (VinnovaAPI): The Vinnova API object, single endpoint
+        description (Optional[str]): The description of the API; required for LLM tools
+        parameters_description (Optional[Dict[str, Dict[str, str]]): The description of the parameters; required for LLM tools
+        api_decorator (Optional[Callable]): The decorator function
 
     """
     def __init__(self,
@@ -34,6 +43,9 @@ class VinnovaDataRetrievalLayer:
 
     @property
     def specification_str(self):
+        """Return the DRL function specification that is compatible with LLM tools specification
+
+        """
         return {
             "type": "function",
             "function": {
@@ -48,7 +60,7 @@ class VinnovaDataRetrievalLayer:
         }
 
     def __call__(self, data: str) -> Dict:
-        """Bla bla
+        """Pass the data to the API
 
         """
         return self._func(data)
@@ -57,8 +69,12 @@ class VinnovaDataRetrievalLayer:
 def build_vinnova_drl_func(
         api_name: str,
         api_conf_fp: str
-):
-    """Bla bla
+) -> VinnovaDataRetrievalLayer:
+    """Build a data retrieval layer according to configuration
+
+    Args:
+        api_name (str): The name of the API
+        api_conf_fp (str): The path to the configuration file
 
     """
     with open(api_conf_fp, 'r') as f:
