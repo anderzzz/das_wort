@@ -4,7 +4,7 @@
     "program-list": {
       "name": "program-list",
       "endpoint": "program",
-      "description": "Collect a list of all programs from Vinnova that have been changed or altered since a certain date. The programs are identified by a unique ID, called 'Diarienummer' or 'DiarienummerUtlysning",
+      "description": "Collect a list of all programs from Vinnova that have been changed or altered since a certain date. The programs are identified by a unique ID, called 'Diarienummer'",
       "parameters": {
         "data": {
           "type": "string",
@@ -21,6 +21,75 @@
         "data": {
           "type": "string",
           "description": "The unique ID of the program to collect detailed information about. The format of the ID is YYYY-NNNNN, such as 2016-01234, 2017-12345."
+        }
+      }
+    },
+    "utlysning-list": {
+      "name": "utlysning-list",
+      "endpoint": "utlysning",
+      "description": "Collect a list of all calls for applications or 'utlysningar' (in Swedish) from Vinnova that have been changed or altered since a certain date. The utlysningar are identified by a unique ID, called 'Diarienummer'.",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The date to start collecting data from. The format of the date is YYYY-MM-DD, such as 2016-01-01, 2017-02-13."
+        }
+      },
+      "decorator": "only_diarienr"
+    },
+    "utlysning-details": {
+      "name": "utlysning-details",
+      "endpoint": "utlysning",
+      "description": "Collect detailed information about a specific call for applications or 'utlysning' (in Swedish) from Vinnova given a unique ID",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The unique ID of the call for applications or 'utlysning' to collect detailed information about. The format of the ID is YYYY-NNNNN, such as 2016-01234, 2017-12345."
+        }
+      }
+    },
+    "ansokningsomgang-list": {
+      "name": "ansokningsomgang-list",
+      "endpoint": "ansokningsomgang",
+      "description": "Collect a list of all application rounds or 'ansökningsomgångar' (in Swedish) from Vinnova that have been changed or altered since a certain date. The application rounds are identified by a unique ID, called 'Diarienummer'.",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The date to start collecting data from. The format of the date is YYYY-MM-DD, such as 2016-01-01, 2017-02-13."
+        }
+      },
+      "decorator": "only_diarienr"
+    },
+    "ansokningsomgang-details": {
+      "name": "ansokningsomgang-details",
+      "endpoint": "ansokningsomgang",
+      "description": "Collect detailed information about a specific application round or 'ansökningsomgång' (in Swedish) from Vinnova given a unique ID",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The unique ID of the application round or 'ansökningsomgång' to collect detailed information about. The format of the ID is YYYY-NNNNN, such as 2016-01234, 2017-12345."
+        }
+      }
+    },
+    "projekt-list": {
+      "name": "projekt-list",
+      "endpoint": "projekt",
+      "description": "Collect a list of all projects from Vinnova that have been changed or altered since a certain date. The projects are identified by a unique ID, called 'Diarienummer'.",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The date to start collecting data from. The format of the date is YYYY-MM-DD, such as 2016-01-01, 2017-02-13."
+        }
+      },
+      "decorator": "only_diarienr"
+    },
+    "projekt-details": {
+      "name": "projekt-details",
+      "endpoint": "projekt",
+      "description": "Collect detailed information about a specific project from Vinnova given a unique ID",
+      "parameters": {
+        "data": {
+          "type": "string",
+          "description": "The unique ID of the project to collect detailed information about. The format of the ID is YYYY-NNNNN, such as 2016-01234, 2017-12345."
         }
       }
     }

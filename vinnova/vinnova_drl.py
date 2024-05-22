@@ -107,7 +107,7 @@ def _vinnova_api_decorator_only_diarienr(func):
 
 
 decorators_to_vinnova_api = {
-    'only_diarienr' : _vinnova_api_decorator_only_diarienr,
+    'only_diarienr': _vinnova_api_decorator_only_diarienr,
 }
 
 
@@ -138,3 +138,6 @@ def build_vinnova_drl_func(api_conf_fp: str):
         )
 
     return vinnova_drl_func
+
+
+def test_

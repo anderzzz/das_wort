@@ -5,17 +5,13 @@ Written by: Anders Ohrn, 2024 May
 """
 import os
 import json
-from httpx import Client
 from typing import List, Dict, Optional, Union
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
 from mistralai.client import MistralClient
 
-from vinnova_drl import build_vinnova_drl_func, VinnovaDataRetrievalLayer
-
-
-VINNOVA_API_CONF_FILE = "vinnova_api_conf.json"
+from vinnova_drl import VinnovaDataRetrievalLayer
 
 
 class MessageStack:
@@ -164,31 +160,3 @@ class SemanticEngine:
                 )
                 self.message_stack.add_assistant_message(response.choices[0].message)
 
-
-
-def main():
-    vinnova_drl_func = build_vinnova_drl_func(VINNOVA_API_CONF_FILE)
-    llm_client = get_openai_client()
-    engine = SemanticEngine(
-        client=llm_client,
-        system_definition="You are the nice assistant brought forth by nice people to help with information.",
-        llm_params={
-            'temperature': 0.7,
-            'max_tokens': 4096,
-            'top_p': 1.0,
-            'frequency_penalty': 0.0,
-            'presence_penalty': 0.0,
-            'n_completions': 1
-        },
-        tools=[vinnova_drl_func[api_key] for api_key in ['program-list']],
-        respond_to_function=False
-    )
-
-    engine.process('Hello there good fellow')
-    print(engine.message_stack)
-    engine.process('I am researching Vinnova grants. I am curious about programs from 2023 and onwards.')
-    print(engine.message_stack)
-
-
-if __name__ == '__main__':
-    main()
