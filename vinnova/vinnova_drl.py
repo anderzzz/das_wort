@@ -12,7 +12,7 @@ class VinnovaHTTPClientError(Exception):
 
 
 def get_httpx_client() -> Client:
-    return Client()
+    return Client(timeout=60.0)
 
 
 class VinnovaAPI:
@@ -23,8 +23,10 @@ class VinnovaAPI:
 
     def __init__(self,
                  endpoint: str,
+                 headers: Optional[Dict[str, str]] = None,
                  ):
         self.endpoint = endpoint
+        self.headers = headers
         self._client = None
 
     @property
@@ -42,7 +44,8 @@ class VinnovaAPI:
 
         """
         url = f"{self.base_url}/{self.endpoint}/{data}"
-        response = self.client.get(url)
+        print (url)
+        response = self.client.get(url, headers=self.headers)
         if response.status_code != 200:
             raise VinnovaHTTPClientError(f"HTTP GET request failed with status code {response.status_code}")
 
@@ -140,4 +143,17 @@ def build_vinnova_drl_func(api_conf_fp: str):
     return vinnova_drl_func
 
 
-def test_
+def test_vinnova_drl_project_api():
+    api = VinnovaAPI('program')
+    api.client = get_httpx_client()
+    data = api('2023-01-01')
+    print (data)
+    api = VinnovaAPI('projekt')
+    api.client = get_httpx_client()
+    data = api('2023-01-01')
+    print (data)
+
+
+if __name__ == '__main__':
+    test_vinnova_drl_project_api()
+    print('Done')
